@@ -15,6 +15,7 @@ jobs:
       - run: sudo mkdir /mnt/runner-will-upload
       - run: sudo apt update
       - run: sudo apt install qemu-kvm nano pbzip2 -y
+      - run: chmod +x ./setup-ssh-arm
       - run: $GITHUB_WORKSPACE/setup-ssh-arm
         shell: bash
       - name: Upload
