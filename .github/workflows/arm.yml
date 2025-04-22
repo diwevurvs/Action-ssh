@@ -13,10 +13,9 @@ jobs:
       - run: sudo gh auth login --with-token < ghtoken.txt
       - run: rm ghtoken.txt
       - run: sudo mkdir /mnt/runner-will-upload
-      - run: sudo rm /mnt/DATALOSS_WARNING_README.txt
       - run: sudo apt update
       - run: sudo apt install qemu-kvm nano pbzip2 -y
-      - run: $GITHUB_WORKSPACE/setup-ssh
+      - run: $GITHUB_WORKSPACE/setup-ssh-arm
         shell: bash
       - name: Upload
         uses: actions/upload-artifact@v4
