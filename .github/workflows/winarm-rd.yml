@@ -1,0 +1,42 @@
+name: Windows RDP ARM
+
+on: [workflow_dispatch]
+
+jobs:
+  setup-rdp:
+    runs-on: windows-11-arm
+
+    steps:
+    - name: Enable RDP service
+      shell: pwsh
+      run: |
+        # 启用并启动远程桌面服务
+        Set-Service -Name TermService -StartupType Automatic -PassThru | Start-Service
+       
+    - name: Set Random Administrator Password
+      shell: pwsh
+      id: set-password
+      run: |
+        # 生成符合复杂性的12位随机密码
+        $password = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 12 | % {[char]$_})
+        
+        # 设置管理员密码并启用账户
+        $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+        Set-LocalUser -Name Administrator -Password $securePassword
+        Enable-LocalUser -Name Administrator
+        
+        # 输出密码到日志（注意安全风险）
+        Write-Host "##[group]RDP Credentials"
+        Write-Host "Username: Administrator"
+        Write-Host "Password: $password"
+        Write-Host "##[endgroup]"
+
+    - name: Cloudflare
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/download/latest/cloudflared-windows-amd64.exe" -OutFile . -UseBasicParsing
+		
+    - name: Cloudflare run
+      shell: cmd
+      run: |
+        ./cloudflared.exe tunnel --url tcp://localhost:3389
