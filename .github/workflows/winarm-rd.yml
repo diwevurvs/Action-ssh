@@ -33,6 +33,6 @@ jobs:
         Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile . -UseBasicParsing
 
     - name: Cloudflare run
-      shell: cmd
+      shell: pwsh
       run: |
-        cloudflared-windows-amd64.exe tunnel --url tcp://localhost:3389
+        .\cloudflared-windows-amd64.exe tunnel --url tcp://localhost:3389
