@@ -35,4 +35,4 @@ jobs:
     - name: Cloudflare run
       shell: pwsh
       run: |
-        .\cloudflared-windows-amd64.exe tunnel --url tcp://localhost:3389
+        .\cloudflared-windows-amd64.exe tunnel --url tcp://localhost:3389 && exit 0 || exit 0
