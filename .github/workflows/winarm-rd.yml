@@ -6,77 +6,31 @@ jobs:
   setup-rdp:
     runs-on: windows-11-arm
     steps:
-    - name: Get Current User Info
-      shell: pwsh
-      id: userinfo
-      run: |
-        # 获取当前运行用户信息
-        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name.Split('\')[1]
-        $fullName = (Get-LocalUser -Name $currentUser).FullName
-        
-        # 输出到环境变量
-        Write-Output "::set-output name=username::$currentUser"
-        Write-Output "::set-output name=fullname::$fullName"
-        
-        # 显示用户信息
-        Write-Host "##[group]Current User Info"
-        Write-Host "User Account: $currentUser"
-        Write-Host "Full Name: $fullName"
-        Write-Host "##[endgroup]"
-
     - name: Enable RDP Service
       shell: pwsh
       run: |
         # 启用远程桌面服务
         Set-Service -Name TermService -StartupType Automatic -Status Running
 
-    - name: Configure User Account
+    - name: Configure RDP Access
       shell: pwsh
       env:
-        TARGET_USER: ${{ steps.userinfo.outputs.username }}
+        RDP_USER: runneradmin
+        RDP_PASSWORD: ${{ secrets.rdpw }}
       run: |
-        # 生成随机密码
-        $password = -join (
-            1..3 | % { [char](Get-Random -Minimum 65 -Maximum 90) },  # 大写字母
-            1..3 | % { [char](Get-Random -Minimum 97 -Maximum 122) }, # 小写字母
-            1..3 | % { [char](Get-Random -Minimum 48 -Maximum 57) },  # 数字
-            1..3 | % { [char](Get-Random -Maximum 94 -Minimum 33) }   # 符号
-        ) | Get-Random -Shuffle | $_.trim()
-        
         # 设置用户密码
-        $securePass = ConvertTo-SecureString $password -AsPlainText -Force
-        Set-LocalUser -Name $env:TARGET_USER -Password $securePass
+        $securePass = ConvertTo-SecureString $env:RDP_PASSWORD -AsPlainText -Force
+        Set-LocalUser -Name $env:RDP_USER -Password $securePass
+        Enable-LocalUser -Name $env:RDP_USER
+        Add-LocalGroupMember -Group "Remote Desktop Users" -Member $env:RDP_USER
+
+        # 启用RDP服务
+        Set-Service -Name TermService -StartupType Automatic -Status Running
+        New-NetFirewallRule -DisplayName "Allow RDP" -Direction Inbound -Protocol TCP -LocalPort 3389 -Action Allow
         
         # 启用账户并添加远程桌面组
         Enable-LocalUser -Name $env:TARGET_USER
         Add-LocalGroupMember -Group "Remote Desktop Users" -Member $env:TARGET_USER
-        
-        # 输出凭证信息
-        Write-Host "##[group]RDP Credentials"
-        Write-Host "Username: $env:TARGET_USER"
-        Write-Host "Password: $password"
-        Write-Host "##[endgroup]"
-        
-        # 保存密码为输出变量
-        Write-Output "::set-output name=rdp_pass::$password"
-
-    - name: Show Connection Info
-      shell: pwsh
-      run: |
-        # 获取网络信息（适配多网络接口情况）
-        $ipAddresses = Get-NetIPAddress -AddressFamily IPv4 | 
-                     Where-Object { $_.InterfaceAlias -notlike "*Loopback*" } |
-                     Select-Object IPAddress, InterfaceAlias
-        
-        Write-Host "##[group]Connection Instructions"
-        Write-Host "1. 使用远程桌面客户端连接以下任意IP:"
-        $ipAddresses | ForEach-Object { 
-            Write-Host "   - $($_.IPAddress) on $($_.InterfaceAlias)" 
-        }
-        Write-Host "2. 使用以下凭证登录:"
-        Write-Host "   用户名: ${{ steps.userinfo.outputs.username }}"
-        Write-Host "   密码: ***（查看上一步骤日志获取）"
-        Write-Host "##[endgroup]"
 
     - name: Cloudflare
       shell: pwsh
