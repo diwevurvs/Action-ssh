@@ -1,6 +1,6 @@
 name: Windows RDP ARM
 
-on: [workflow_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   setup-rdp:
@@ -35,4 +35,4 @@ jobs:
     - name: Cloudflare run
       shell: cmd
       run: |
-        cloudflared.exe tunnel --url tcp://localhost:3389
+        cloudflared-windows-amd64.exe tunnel --url tcp://localhost:3389
