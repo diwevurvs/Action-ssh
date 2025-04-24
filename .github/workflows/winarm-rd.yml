@@ -20,17 +20,12 @@ jobs:
       run: |
         # 设置用户密码
         $securePass = ConvertTo-SecureString $env:RDP_PASSWORD -AsPlainText -Force
-        Set-LocalUser -Name $env:RDP_USER -Password $securePass
-        Enable-LocalUser -Name $env:RDP_USER
-        Add-LocalGroupMember -Group "Remote Desktop Users" -Member $env:RDP_USER
+        Set-LocalUser -Name runneradmin -Password $securePass
+        Enable-LocalUser -Name runneradmin
+        Add-LocalGroupMember -Group "Remote Desktop Users" -Member runneradmin
 
         # 启用RDP服务
         Set-Service -Name TermService -StartupType Automatic -Status Running
-        New-NetFirewallRule -DisplayName "Allow RDP" -Direction Inbound -Protocol TCP -LocalPort 3389 -Action Allow
-        
-        # 启用账户并添加远程桌面组
-        Enable-LocalUser -Name $env:TARGET_USER
-        Add-LocalGroupMember -Group "Remote Desktop Users" -Member $env:TARGET_USER
 
     - name: Cloudflare
       shell: pwsh
