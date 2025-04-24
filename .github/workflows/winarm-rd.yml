@@ -35,4 +35,4 @@ jobs:
     - name: Cloudflare run
       shell: cmd
       run: |
-        ./cloudflared.exe tunnel --url tcp://localhost:3389
+        cloudflared.exe tunnel --url tcp://localhost:3389
