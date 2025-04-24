@@ -30,7 +30,7 @@ jobs:
     - name: Cloudflare
       shell: pwsh
       run: |
-        Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/download/latest/cloudflared-windows-amd64.exe" -OutFile . -UseBasicParsing
+        Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile . -UseBasicParsing
 
     - name: Cloudflare run
       shell: cmd
