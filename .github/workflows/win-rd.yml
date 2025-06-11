@@ -35,7 +35,7 @@ jobs:
     - name: Cloudflare run
       shell: pwsh
       run: |
-        .\cloudflared-windows-amd64.exe tunnel --url tcp://localhost:3389 && exit 0 || exit 0
+        .\cloudflared-windows-amd64.exe tunnel --url tcp://localhost:3389
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4.6.2
